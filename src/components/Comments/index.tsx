@@ -13,14 +13,12 @@ import {
   Text,
   Textarea,
   IconButton,
-  List,
   ListItem,
-  ListIcon,
   UnorderedList,
 } from "@chakra-ui/react";
 import { ChatIcon } from "@chakra-ui/icons";
 
-import { use, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getDataComments, postNewComment } from "@/repositories/fetcher";
 
 type props = {
@@ -38,24 +36,26 @@ export function Comments({ photoId }: props) {
   const [data, setData] = useState<[comment]>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const fetchComment = () => {
+  const fetchComment = useCallback(() => {
     getDataComments(photoId).then((resp) => {
       setData(resp?.data);
     });
-  }
+  }, [photoId])
 
   useEffect(() => {
     if (photoId && isOpen) {
       fetchComment();
     }
-  }, [photoId, isOpen]);
+  }, [photoId, isOpen, fetchComment]);
 
   const handleNewComment = () => {
+    setIsLoading(true);
     postNewComment(JSON.stringify({
       text: newComment,
       photo_id: photoId,
     })).then((res) => {
       setNewComment("");
+      setIsLoading(false);
       fetchComment();
     }).catch(err => console.error(err));
   };
